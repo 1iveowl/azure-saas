@@ -14,7 +14,7 @@ public class UserNotFoundException : Exception
     {
     }
 
-    protected UserNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
+    //protected UserNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+    //{
+    //}
 }

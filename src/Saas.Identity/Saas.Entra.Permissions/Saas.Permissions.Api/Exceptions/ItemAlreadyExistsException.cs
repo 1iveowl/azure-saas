@@ -14,7 +14,7 @@ public class ItemAlreadyExistsException : Exception
     {
     }
 
-    protected ItemAlreadyExistsException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
+    //protected ItemAlreadyExistsException(SerializationInfo info, StreamingContext context) : base(info, context)
+    //{
+    //}
 }

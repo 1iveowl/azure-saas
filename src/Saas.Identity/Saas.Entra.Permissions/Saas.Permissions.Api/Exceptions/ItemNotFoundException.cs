@@ -14,7 +14,7 @@ public class ItemNotFoundException : Exception
     {
     }
 
-    protected ItemNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
+    //protected ItemNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+    //{
+    //}
 }

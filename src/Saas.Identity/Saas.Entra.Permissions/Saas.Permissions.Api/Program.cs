@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
 
 /*  IMPORTANT
-    In the configuration pattern used here, we're seeking to minimize the use of appsettings.json, 
+    In the configuration pattern used here, we're seeking to minimize the use of 'appsettings.json', 
     as well as eliminate the need for storing local secrets. 
 
     Instead we're utilizing the Azure App Configuration service for storing settings and the Azure Key Vault to store secrets.
@@ -111,7 +111,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI(config =>
     {
-        config.SwaggerEndpoint("/swagger/v1/swagger.json", "Saas Permissions Service 1.1");
+        config.SwaggerEndpoint("/swagger/v1/swagger.json", "SaaS Permissions API Service 2.0");
     });
 }
 
@@ -120,9 +120,9 @@ app.UseForwardedHeaders();
 
 if (! app.Environment.IsDevelopment())
 {
-    // When now in development, add middleware to check for the presaz ence of a valid API Key
+    // When now in development, add middleware to check for the presence of a valid API Key
     // For debugging purposes, you can comment out 'app.UseMiddleware...'. This way you
-    // don't have to add the secret to the header everytime you want to test something in swagger, for instance.
+    // don't have to add the secret to the header every time you want to test something in swagger, for instance.
     app.UseMiddleware<ApiKeyMiddleware>();
 }
 
@@ -139,7 +139,7 @@ void InitializeDevEnvironment()
 {
     // IMPORTANT
     // The current version.
-    // Must correspond exactly to the version string of our deployment as specificed in the deployment config.json.
+    // Must correspond exactly to the version string of our deployment as specified in the deployment config.json.
     var version = "ver0.8.0";
 
     logger.LogInformation("Version: {version}", version);
@@ -150,7 +150,7 @@ void InitializeDevEnvironment()
     // and likewise for storing a secret for the permission-api app. 
     // https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows
 
-    var appConfigurationconnectionString = builder.Configuration.GetConnectionString("AppConfig")
+    var appConfigurationConnectionString = builder.Configuration.GetConnectionString("AppConfig")
         ?? throw new NullReferenceException("App config missing.");
 
     // Use the connection string to access Azure App Configuration to get access to app settings stored there.
@@ -162,7 +162,7 @@ void InitializeDevEnvironment()
     AzureCliCredential credential = new();
 
     builder.Configuration.AddAzureAppConfiguration(options =>
-            options.Connect(appConfigurationconnectionString)
+            options.Connect(appConfigurationConnectionString)
                 .ConfigureKeyVault(kv => kv.SetCredential(new ChainedTokenCredential(credential)))
             .Select(KeyFilter.Any, version)); // <-- Important: since we're using labels in our Azure App Configuration store
 
@@ -180,7 +180,7 @@ void InitializeDevEnvironment()
 
 void InitializeProdEnvironment()
 {
-    // For procution environment, we'll configured Managed Identities for managing access Azure App Services
+    // For production environment, we'll configured Managed Identities for managing access Azure App Services
     // and Key Vault. The Azure App Services endpoint is stored in an environment variable for the web app.
 
     var version = builder.Configuration.GetRequiredSection("Version")?.Value

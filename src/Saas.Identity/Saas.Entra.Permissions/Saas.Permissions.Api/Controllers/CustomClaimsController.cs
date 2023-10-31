@@ -74,7 +74,7 @@ public class CustomClaimsController : ControllerBase
 
         RolesClaimResponse response = new()
         {
-            Roles = Array.Empty<string>()
+            Roles = []
         };
 
         await Task.CompletedTask;

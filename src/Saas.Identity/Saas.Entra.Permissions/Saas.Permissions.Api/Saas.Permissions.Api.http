@@ -1,0 +1,6 @@
+@Saas.Permissions.Api_HostAddress = http://localhost:5230
+
+GET {{Saas.Permissions.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
