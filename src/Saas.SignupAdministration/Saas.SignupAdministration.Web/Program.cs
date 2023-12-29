@@ -1,9 +1,7 @@
-using Azure.Identity;
 using Microsoft.Identity.Web.UI;
 using Saas.SignupAdministration.Web;
 using Saas.Application.Web;
 using System.Reflection;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Saas.Shared.Options;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Saas.Identity.Extensions;
@@ -44,7 +42,6 @@ string version = builder.Environment.EnvironmentName switch
         ?? throw new NullReferenceException("The Version value cannot be found. Has the 'Version' environment variable been set correctly?"),
     _ => throw new NullReferenceException("The Version value must be set ot either 'Development' or 'Production'. Has the 'Version' environment variable been set correctly?")
 };
-
 
 string appName = Assembly.GetCallingAssembly().GetName().Name
     ?? throw new NullReferenceException("Project name cannot be null.");

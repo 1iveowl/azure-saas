@@ -1,16 +1,16 @@
-using Azure.Identity;
 using Saas.Permissions.Service.Data;
 using Saas.Permissions.Service.Interfaces;
 using Saas.Shared.Options;
 using Saas.Permissions.Service.Services;
 using Saas.Permissions.Service.Middleware;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using System.Reflection;
 using Saas.Identity.Extensions;
 using Saas.Shared.Interface;
 using Polly;
 using Saas.Permissions.Service.Data.Context;
 using Saas.Shared.Settings;
+using Saas.Identity.Helper;
+using Saas.Identity.Interface;
 
 /*  IMPORTANT
     In the configuration pattern used here, we're seeking to minimize the use of appsettings.json, 
@@ -52,6 +52,14 @@ consoleLogger.LogInformation("001");
 
 SaasConfigurator.Initialize(builder.Configuration, builder.Environment, consoleLogger, version);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IKeyVaultCredentialService, DevelopmentKeyVaultCredentials>();
+}
+else
+{
+    builder.Services.AddScoped<IKeyVaultCredentialService, ProductionKeyVaultCredentials>();
+}
 
 // Add configuration settings data using Options Pattern.
 // For more see: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-7.0
@@ -97,6 +105,14 @@ builder.Logging.ClearProviders();
 if (builder.Environment.IsDevelopment())
 {
     builder.Logging.AddConsole();
+
+    // Configuring Swagger.
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(config =>
+    {
+        config.SwaggerDoc("v1", new() { Title = appName, Version = "v1.3" });
+    }); 
 }
 else
 {
