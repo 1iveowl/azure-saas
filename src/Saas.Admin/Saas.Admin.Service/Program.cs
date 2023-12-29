@@ -1,5 +1,3 @@
-using Azure.Identity;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Options;
 using Saas.Admin.Service.Data;
 using Saas.Identity.Authorization.Handler;
@@ -7,16 +5,7 @@ using Saas.Identity.Authorization.Option;
 using Saas.Identity.Authorization.Provider;
 using Saas.Permissions.Client;
 using Saas.Shared.Options;
-
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddApplicationInsightsTelemetry();
-
-string projectName = Assembly.GetCallingAssembly().GetName().Name
-    ?? throw new NullReferenceException("Project name cannot be null.");
-
-var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger(projectName);
-
-logger.LogInformation("001");
+using Saas.Shared.Settings;
 
 /*  IMPORTANT
     In the configuration pattern used here, we're seeking to minimize the use of appsettings.json, 
@@ -35,15 +24,29 @@ logger.LogInformation("001");
     on how to set up and run this service in a local development environment - i.e., a local dev machine. 
 */
 
-if (builder.Environment.IsDevelopment())
-{
-    InitializeDevEnvironment();
-}
-else
-{
-    InitializeProdEnvironment();
-}
+var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddApplicationInsightsTelemetry();
+
+// IMPORTANT: The current version, must correspond exactly to the version string of our deployment as specificed in the deployment config.json to match the label in Azure App Configuration.
+// The version string is set manually for Development environment and is pulled from Azure App Configuration for Production environment.
+string version = builder.Environment.EnvironmentName switch
+{
+    "Development" => "ver0.8.0",
+    "Production" => builder.Configuration.GetRequiredSection("Version")?.Value
+        ?? throw new NullReferenceException("The Version value cannot be found. Has the 'Version' environment variable been set correctly?"),
+    _ => throw new NullReferenceException("The Version value must be set ot either 'Development' or 'Production'. Has the 'Version' environment variable been set correctly?")
+};
+
+string appName = Assembly.GetCallingAssembly().GetName().Name
+    ?? throw new NullReferenceException("Project name cannot be null.");
+
+// Setting up Logging for console
+ILogger consoleLogger = SaasConfigurator.CreateConsoleLogger(appName);
+
+SaasConfigurator.Initialize(builder.Configuration, builder.Environment, consoleLogger, version);
+
+// Configure Options for DI
 builder.Services.Configure<AzureB2CAdminApiOptions>(
         builder.Configuration.GetRequiredSection(AzureB2CAdminApiOptions.SectionName));
 
@@ -59,6 +62,7 @@ builder.Services.Configure<SqlOptions>(
 builder.Services.Configure<SaasAuthorizationOptions>(
     builder.Configuration.GetRequiredSection(SaasAuthorizationOptions.SectionName));
 
+// Configure HttpContext for DI
 builder.Services.AddHttpContextAccessor();
 
 // Add authentication for incoming requests
@@ -71,10 +75,12 @@ builder.Services.AddSingleton<IAuthorizationHandler, SaasUserPermissionAuthoriza
 // Register the policy provider
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, SaasPermissionAuthorizationPolicyProvider>();
 
-builder.Services.AddControllers();
-
+// Register the tenant service
 builder.Services.AddScoped<ITenantService, TenantService>();
 
+builder.Services.AddControllers();
+
+// Register the permissions service client
 builder.Services.AddHttpClient<IPermissionsServiceClient, PermissionsServiceClient>()
     .ConfigureHttpClient((serviceProvider, client) =>
     {
@@ -101,19 +107,36 @@ builder.Services.AddDbContext<TenantsContext>(options =>
     options.UseSqlServer(sqlConnectionString);
 });
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.AddConsole();
+    
+    // Configuring Swagger.
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+
+    // Enabling to option for add the 'x-api-key' header to swagger UI.
+    builder.Services.AddSwaggerGen(option =>
+    {
+        option.SwaggerDoc("v1", new() { Title = appName, Version = "v1.3" });
+        // option.OperationFilter<SwagCustomHeaderFilter>();
+    });
+}
+
 var app = builder.Build();
 
 //Call this as early as possible to make sure DB is ready
 //In a larger project it's better update the database during deployment process
 app.ConfigureDatabase();
 
-// Configure the HTTP request pipeline.
+// Setting up Swagger for development environment
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -122,76 +145,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-/*---------------
-  local methods
-----------------*/
-
-void InitializeDevEnvironment()
-{
-    // IMPORTANT
-    // The current version.
-    // Must correspond exactly to the version string of our deployment as specificed in the deployment config.json.
-    var version = "ver0.8.0";
-
-    logger.LogInformation("Version: {version}", version);
-    logger.LogInformation($"Is Development.");
-
-    // For local development, use the Secret Manager feature of .NET to store a connection string
-    // and likewise for storing a secret for the permission-api app. 
-    // https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows
-
-    var appConfigurationconnectionString = builder.Configuration.GetConnectionString("AppConfig")
-        ?? throw new NullReferenceException("App config missing.");
-
-    // Use the connection string to access Azure App Configuration to get access to app settings stored there.
-    // To gain access to Azure Key Vault use 'Azure Cli: az login' to log into Azure.
-    // This login on will also now provide valid access tokens to the local development environment.
-    // For more details and the option to chain and combine multiple credential options with `ChainedTokenCredential`
-    // please see: https://learn.microsoft.com/en-us/dotnet/api/overview/azure/identity-readme?view=azure-dotnet#define-a-custom-authentication-flow-with-chainedtokencredential
-
-    AzureCliCredential credential = new();
-
-    builder.Configuration.AddAzureAppConfiguration(options =>
-            options.Connect(appConfigurationconnectionString)
-                .ConfigureKeyVault(kv => kv.SetCredential(new ChainedTokenCredential(credential)))
-            .Select(KeyFilter.Any, version)); // <-- Important: since we're using labels in our Azure App Configuration store
-
-    // Configuring Swagger.
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-
-    // Enabling to option for add the 'x-api-key' header to swagger UI.
-    builder.Services.AddSwaggerGen(option =>
-    {
-        option.SwaggerDoc("v1", new() { Title = "Admin API", Version = "v1.1" });
-    });
-}
-
-void InitializeProdEnvironment()
-{
-    // For procution environment, we'll configured Managed Identities for managing access Azure App Services
-    // and Key Vault. The Azure App Services endpoint is stored in an environment variable for the web app.
-
-    var version = builder.Configuration.GetRequiredSection("Version")?.Value
-        ?? throw new NullReferenceException("The Version value cannot be found. Has the 'Version' environment variable been set correctly for the Web App?");
-
-    logger.LogInformation("Version: {version}", version);
-    logger.LogInformation($"Is Production.");
-
-    var appConfigurationEndpoint = builder.Configuration.GetRequiredSection("AppConfiguration:Endpoint")?.Value
-        ?? throw new NullReferenceException("The Azure App Configuration Endpoint cannot be found. Has the endpoint environment variable been set correctly for the Web App?");
-
-    // Get the ClientId of the UserAssignedIdentity
-    // If we don't set this ClientID in the ManagedIdentityCredential constructor, it doesn't know it should use the user assigned managed id.
-    var managedIdentityClientId = builder.Configuration.GetRequiredSection("UserAssignedManagedIdentityClientId")?.Value
-        ?? throw new NullReferenceException("The Environment Variable 'UserAssignedManagedIdentityClientId' cannot be null. Check the App Service Configuration.");
-
-    ManagedIdentityCredential userAssignedManagedCredentials = new(managedIdentityClientId);
-
-    builder.Configuration.AddAzureAppConfiguration(options =>
-        options.Connect(new Uri(appConfigurationEndpoint), userAssignedManagedCredentials)
-            .ConfigureKeyVault(kv => kv.SetCredential(userAssignedManagedCredentials))
-        .Select(KeyFilter.Any, version)); // <-- Important since we're using labels in our Azure App Configuration store
-}

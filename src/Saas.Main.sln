@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saas.Permissions.Client", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{74B177A0-26D8-43CB-9C1E-B65928E1E95D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saas.CustomClaimsProvider", "Saas.Identity\Saas.CustomClaimsProvider\Saas.CustomClaimsProvider\Saas.CustomClaimsProvider.csproj", "{CC514B10-5CC2-44CC-9510-29D492D10C8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,12 @@ Global
 		{371CF436-6370-4BAF-A4FB-F3DA54EA9B99}.Multi Debug|Any CPU.Build.0 = Multi Debug|Any CPU
 		{371CF436-6370-4BAF-A4FB-F3DA54EA9B99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{371CF436-6370-4BAF-A4FB-F3DA54EA9B99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC514B10-5CC2-44CC-9510-29D492D10C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC514B10-5CC2-44CC-9510-29D492D10C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC514B10-5CC2-44CC-9510-29D492D10C8F}.Multi Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC514B10-5CC2-44CC-9510-29D492D10C8F}.Multi Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC514B10-5CC2-44CC-9510-29D492D10C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC514B10-5CC2-44CC-9510-29D492D10C8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,6 +104,7 @@ Global
 		{38673DB4-AF0D-4662-B866-D9BF690E72A9} = {74B177A0-26D8-43CB-9C1E-B65928E1E95D}
 		{371CF436-6370-4BAF-A4FB-F3DA54EA9B99} = {74B177A0-26D8-43CB-9C1E-B65928E1E95D}
 		{74B177A0-26D8-43CB-9C1E-B65928E1E95D} = {EB890835-2B03-4950-8F6B-5DA8BC301D80}
+		{CC514B10-5CC2-44CC-9510-29D492D10C8F} = {EB890835-2B03-4950-8F6B-5DA8BC301D80}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {41C71D6C-FEC9-49A8-A6FB-FAF43AB15C84}
