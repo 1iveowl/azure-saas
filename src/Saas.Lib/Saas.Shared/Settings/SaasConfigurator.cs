@@ -102,7 +102,10 @@ public static class SaasConfigurator
 
         configuration.AddAzureAppConfiguration(options =>
             options.Connect(new Uri(appConfigurationEndpoint), userAssignedManagedCredentials)
-                .ConfigureKeyVault(kv => kv.SetCredential(userAssignedManagedCredentials))
-            .Select(KeyFilter.Any, version)); // <-- Important since we're using labels in our Azure App Configuration store
+            .ConfigureKeyVault(kv => 
+            {
+                kv.SetCredential(userAssignedManagedCredentials);
+            })
+            .Select(KeyFilter.Any, version)); ;; // <-- Important since we're using labels in our Azure App Configuration store
     }
 }

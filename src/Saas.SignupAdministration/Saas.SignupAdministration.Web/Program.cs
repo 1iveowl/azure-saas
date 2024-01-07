@@ -8,6 +8,9 @@ using Saas.Identity.Extensions;
 using Saas.Identity.Helper;
 using Saas.Admin.Client;
 using Saas.Shared.Settings;
+using Saas.Shared.Options.Entra;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 // Hint: For debugging purposes: https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/wiki/PII
 // IdentityModelEventSource.ShowPII = true;
@@ -90,25 +93,38 @@ var scopes = builder.Configuration.GetRequiredSection(AdminApiOptions.SectionNam
     .Get<AdminApiOptions>()?.Scopes
         ?? throw new NullReferenceException("Scopes cannot be null");
 
+// This is required to be instantiated before the OpenIdConnectOptions starts getting configured.
+// By default, the claims mapping will map claim names in the old format to accommodate older SAML applications.
+// For instance, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role' instead of 'roles' claim.
+// This flag ensures that the ClaimsIdentity claims collection will be built from the claims in the token
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+
 // Azure AD B2C requires scope config with a fully qualified url along with an identifier. To make configuring it more manageable and less
 // error prone, we store the names of the scopes separately from the application id uri and combine them when neded.
-var fullyQualifiedScopes = scopes.Select(scope => $"{applicationUri}/{scope}".Trim('/')).ToArray();
+// var fullyQualifiedScopes = scopes.Select(scope => $"{applicationUri}/{scope}".Trim('/')).ToArray();
+
+// Sign-in users with the Microsoft identity platform
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration, EntraSignupAdminOptions.SectionName)
+    //.EnableTokenAcquisitionToCallDownstreamApi(fullyQualifiedScopes)
+    .EnableTokenAcquisitionToCallDownstreamApi()
+    .AddInMemoryTokenCaches();
 
 // Adding SaaS Authentication and setting web app up for calling the Admin API
-builder.Services.AddSaasWebAppAuthentication(
-    fullyQualifiedScopes,
-    options =>
-    {
-        builder.Configuration.Bind(AzureB2CSignupAdminOptions.SectionName, options);
-    })
-    .SaaSAppCallDownstreamApi()
-    .AddInMemoryTokenCaches();
+//builder.Services.AddSaasWebAppAuthentication(
+//    fullyQualifiedScopes,
+//    options =>
+//    {
+//        builder.Configuration.Bind(EntraSignupAdminOptions.SectionName, options);
+//    })
+//    .SaaSAppCallDownstreamApi()
+//    .AddInMemoryTokenCaches();
 
 // Managing the situation where the access token is not in cache.
 // For more details please see: https://github.com/AzureAD/microsoft-identity-web/issues/13
-builder.Services.Configure<CookieAuthenticationOptions>(
-    CookieAuthenticationDefaults.AuthenticationScheme,
-    options => options.Events = new RejectSessionCookieWhenAccountNotInCacheEvents(fullyQualifiedScopes));
+//builder.Services.Configure<CookieAuthenticationOptions>(
+//    CookieAuthenticationDefaults.AuthenticationScheme,
+//    options => options.Events = new RejectSessionCookieWhenAccountNotInCacheEvents(fullyQualifiedScopes));
 
 builder.Services.AddHttpClient<IAdminServiceClient, AdminServiceClient>(httpClient =>
 {

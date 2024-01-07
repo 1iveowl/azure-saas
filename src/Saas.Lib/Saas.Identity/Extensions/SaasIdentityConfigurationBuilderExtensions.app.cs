@@ -28,13 +28,12 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
     }
 
     public static SaasWebAppClientCredentialBuilder AddSaasWebAppAuthentication(this IServiceCollection services,
-    IEnumerable<string> scopes,
-    Action<MicrosoftIdentityOptions> configureMicrosoftIdentityOptions)
+        IEnumerable<string> scopes,
+        Action<MicrosoftIdentityOptions> configureMicrosoftIdentityOptions)
     {
         // Registerer scopes to the Options collection
         services.Configure<SaasAppScopeOptions>(saasAppScopeOptions =>
             saasAppScopeOptions.Scopes = scopes.ToArray());
-
 
         var authenticationBuilder = services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApp(configureMicrosoftIdentityOptions);

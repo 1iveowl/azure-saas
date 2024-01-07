@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,12 +11,11 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
     // For details see: https://learn.microsoft.com/en-us/entra/identity-platform/custom-extension-overview#protect-your-rest-api
     private const string EntraIdP = "99045fe1-7639-4a75-9d4a-577b6ca3810f";
 
-    public static void AddSaasEntraCustomClaimsProviderAuthentication(this IServiceCollection services,
+    public static void AddSaasEntraCustomClaimsProviderAuthentication(this AuthenticationBuilder authenticationBuilder,
         string configSectionName,
         ConfigurationManager configuration)
     {
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+        authenticationBuilder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 configuration.Bind(configSectionName, options);
 
