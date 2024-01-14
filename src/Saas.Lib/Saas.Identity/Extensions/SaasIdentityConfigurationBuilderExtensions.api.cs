@@ -6,16 +6,16 @@ using Saas.Identity.Interface;
 using Saas.Identity.Provider;
 using Saas.Shared.Interface;
 using Saas.Shared.Options;
+using Saas.Shared.Options.Entra;
 
 namespace Saas.Identity.Extensions;
 public static partial class SaasIdentityConfigurationBuilderExtensions
 {
-
     public static SaasApiClientCredentialBuilder<TProvider, TOptions> AddSaasApiCertificateClientCredentials<TProvider, TOptions>(
         this IServiceCollection services, 
         IEnumerable<string>? scopes = default)
-        where TProvider : ISaasApi
-        where TOptions : AzureAdB2CBase
+            where TProvider : ISaasApi
+            where TOptions : EntraBase
     {
 
         services.AddMemoryCache();
@@ -25,10 +25,10 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
 
         switch (scopes)
         {
-            case null when (typeof(TProvider).Equals(typeof(ISaasMicrosoftGraphApi))):
+            case null when typeof(TProvider).Equals(typeof(ISaasMicrosoftGraphApi)):
                 {
                     services.Configure<SaasApiScopeOptions<TProvider>>(options
-                        => options.Scopes = new[] { "https://graph.microsoft.com/.default" });
+                        => options.Scopes = ["https://graph.microsoft.com/.default"]);
                     break;
                 }
             case null:
@@ -47,7 +47,7 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
 
 public class SaasApiClientCredentialBuilder<TProvider, TOptions>(IServiceCollection services)
     where TProvider : ISaasApi
-    where TOptions : AzureAdB2CBase
+    where TOptions : EntraBase
 {
     private readonly IServiceCollection _services = services;
 

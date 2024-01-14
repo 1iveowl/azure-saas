@@ -4,16 +4,12 @@ namespace Saas.SignupAdministration.Web.Controllers;
 
 [Authorize()]
 // [AuthorizeForScopes(Scopes = new string[] { "tenant.read", "tenant.global.read", "tenant.write", "tenant.global.write", "tenant.delete", "tenant.global.delete" })]
-public class OnboardingWorkflowController : Controller
+public class OnboardingWorkflowController(
+    ILogger<OnboardingWorkflowController> logger, 
+    OnboardingWorkflowService onboardingWorkflow) : Controller
 {
-    private readonly ILogger<OnboardingWorkflowController> _logger;
-    private readonly OnboardingWorkflowService _onboardingWorkflow;
-
-    public OnboardingWorkflowController(ILogger<OnboardingWorkflowController> logger, OnboardingWorkflowService onboardingWorkflow)
-    {
-        _logger = logger;
-        _onboardingWorkflow = onboardingWorkflow;
-    }
+    private readonly ILogger<OnboardingWorkflowController> _logger = logger;
+    private readonly OnboardingWorkflowService _onboardingWorkflow = onboardingWorkflow;
 
     // Step 1 - Submit the organization name
     [HttpGet]

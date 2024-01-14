@@ -5,10 +5,10 @@ using Microsoft.Identity.Web;
 using Saas.Shared.Options;
 
 namespace Saas.Identity.Extensions;
+
 public static partial class SaasIdentityConfigurationBuilderExtensions
 {
-    public static SaasWebAppClientCredentialBuilder AddSaasWebAppAuthentication(
-        this IServiceCollection services,
+    public static SaasWebAppClientCredentialBuilder AddSaasWebAppAuthentication(this IServiceCollection services,
         string configSectionName,
         ConfigurationManager configuration,
         IEnumerable<string> scopes)
@@ -17,7 +17,7 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
         services.Configure<SaasAppScopeOptions>(saasAppScopeOptions => 
             saasAppScopeOptions.Scopes = scopes.ToArray());
 
-
+      
         var authenticationBuilder = services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApp(options =>
             {
@@ -27,15 +27,13 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
         return new SaasWebAppClientCredentialBuilder(authenticationBuilder, scopes);
     }
 
-    public static SaasWebAppClientCredentialBuilder AddSaasWebAppAuthentication(
-    this IServiceCollection services,
-    IEnumerable<string> scopes,
-    Action<MicrosoftIdentityOptions> configureMicrosoftIdentityOptions)
+    public static SaasWebAppClientCredentialBuilder AddSaasWebAppAuthentication(this IServiceCollection services,
+        IEnumerable<string> scopes,
+        Action<MicrosoftIdentityOptions> configureMicrosoftIdentityOptions)
     {
         // Registerer scopes to the Options collection
         services.Configure<SaasAppScopeOptions>(saasAppScopeOptions =>
             saasAppScopeOptions.Scopes = scopes.ToArray());
-
 
         var authenticationBuilder = services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApp(configureMicrosoftIdentityOptions);
