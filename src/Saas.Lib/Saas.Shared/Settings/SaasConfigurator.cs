@@ -63,7 +63,7 @@ public static class SaasConfigurator
 
         // For local development, use the Secret Manager feature of .NET to store a connection string
         // and likewise for storing a secret for the permission-api app. 
-        // https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows
+        // https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-8.0&tabs=windows
         var appConfigurationconnectionString = configuration.GetConnectionString("AppConfig")
             ?? throw new NullReferenceException("App config missing.");
 

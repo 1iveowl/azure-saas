@@ -62,7 +62,7 @@ else
 }
 
 // Add configuration settings data using Options Pattern.
-// For more see: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-7.0
+// For more see: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-8.0
 builder.Services.Configure<PermissionsApiOptions>(
         builder.Configuration.GetRequiredSection(PermissionsApiOptions.SectionName));
 
