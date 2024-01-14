@@ -1,4 +1,5 @@
-﻿using Saas.Permissions.Service.Exceptions;
+﻿using Microsoft.AspNetCore.Authorization;
+using Saas.Permissions.Service.Exceptions;
 using Saas.Permissions.Service.Interfaces;
 using Saas.Permissions.Service.Models;
 
@@ -6,6 +7,8 @@ namespace Saas.Permissions.Service.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
+must add auth paradigm here...
 public class PermissionsController(
     IPermissionsService permissionsService, 
     IGraphAPIService graphAPIService, ILogger<PermissionsController> logger) : ControllerBase

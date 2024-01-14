@@ -15,7 +15,11 @@ public class ApplicationUser : ClaimsIdentity, IApplicationUser
             var claim = Identity?.FindFirst(SR.EmailAddressClaimType);
             string emailAddress = claim?.Value ?? string.Empty;
 
-            return (!string.IsNullOrWhiteSpace(emailAddress) || RegexUtilities.IsValidEmail(emailAddress)) ? emailAddress : (emailAddress == null) ? throw new ArgumentNullException("EmailAddress") : throw new ArgumentException("The email addres must be in a valid format", "EmailAddress");
+            return string.IsNullOrWhiteSpace(emailAddress) && !RegexUtilities.IsValidEmail(emailAddress)
+                ? emailAddress == null 
+                    ? throw new ArgumentNullException(emailAddress) 
+                    : throw new ArgumentException("The email addres must be in a valid format.", emailAddress) 
+                : emailAddress;
         }
     }
 
@@ -25,7 +29,9 @@ public class ApplicationUser : ClaimsIdentity, IApplicationUser
         {
             var claim = Identity?.FindFirst(SR.NameIdentifierClaimType);
 
-            return (Guid.TryParse(claim?.Value, out Guid nameIdentifier)) ? nameIdentifier : throw new ArgumentNullException("NameIdentifier");
+            return Guid.TryParse(claim?.Value, out Guid nameIdentifier)
+                ? nameIdentifier
+                : throw new ArgumentNullException("NameIdentifier");
         }
     }
 
@@ -47,7 +53,11 @@ public class ApplicationUser : ClaimsIdentity, IApplicationUser
 
             bool success = long.TryParse(claim?.Value, out long ticks);
 
-            return new DateTime((success) ? ticks : 0);
+            return new DateTime(
+                success 
+                    ? ticks 
+                    : 0
+                );
         }
     }
 
@@ -59,7 +69,9 @@ public class ApplicationUser : ClaimsIdentity, IApplicationUser
 
             bool success = long.TryParse(claim?.Value, out long ticks);
 
-            return (success) ? ticks : 0;
+            return success
+                ? ticks 
+                : 0;
         }
     }
 
@@ -89,7 +101,9 @@ public class ApplicationUser : ClaimsIdentity, IApplicationUser
         {
             var claim = Identity?.FindFirst(SR.TenantIdClaimType);
 
-            return (Guid.TryParse(claim?.Value, out Guid tenantId)) ? tenantId : throw new ArgumentNullException("TenantId");
+            return Guid.TryParse(claim?.Value, out Guid tenantId) 
+                ? tenantId 
+                : throw new ArgumentNullException("TenantId");
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Identity.Client;
 using Saas.Identity.Interface;
 using Saas.Shared.Interface;
 using Saas.Shared.Options;
+using Saas.Shared.Options.Entra;
 using System.Net.Http.Headers;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -11,7 +12,7 @@ namespace Saas.Identity.Provider;
 
 public class SaasApiAuthenticationProvider<TProvider, TOptions> : DelegatingHandler
     where TProvider : ISaasApi
-    where TOptions : AzureAdB2CBase
+    where TOptions : EntraBase
 {
     private readonly ILogger _logger;
 
@@ -26,7 +27,7 @@ public class SaasApiAuthenticationProvider<TProvider, TOptions> : DelegatingHand
 
     public SaasApiAuthenticationProvider(
         IClientAssertionSigningProvider clientAssertionSigningProvider,
-        IOptions<TOptions> azureAdB2COptions,
+        IOptions<TOptions> entraOptions,
         IOptions<SaasApiScopeOptions<TProvider>> scopes,
         IKeyVaultCredentialService credentialService,
         ILogger<SaasApiAuthenticationProvider<TProvider, TOptions>> logger)
@@ -34,7 +35,7 @@ public class SaasApiAuthenticationProvider<TProvider, TOptions> : DelegatingHand
         _logger = logger;
         _scopes = scopes.Value.Scopes;
 
-        if (azureAdB2COptions.Value.KeyVaultCertificateReferences?.FirstOrDefault() is null)
+        if (entraOptions.Value.KeyVaultCertificateReferences?.FirstOrDefault() is null)
         {
             logger.LogError("Certificate cannot be null.");
             throw new NullReferenceException("Certificate cannot be null.");
@@ -43,12 +44,12 @@ public class SaasApiAuthenticationProvider<TProvider, TOptions> : DelegatingHand
         _msalClient = new Lazy<IConfidentialClientApplication>(() =>
         {
             return ConfidentialClientApplicationBuilder
-                .Create(azureAdB2COptions.Value.ClientId)
-                .WithAuthority(AzureCloudInstance.AzurePublic, azureAdB2COptions.Value.TenantId)
+                .Create(entraOptions.Value.ClientId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, entraOptions.Value.TenantId)
                 .WithClientAssertion(
                     (options) =>
                         clientAssertionSigningProvider.GetClientAssertion(
-                            azureAdB2COptions.Value.KeyVaultCertificateReferences.First(),
+                            entraOptions.Value.KeyVaultCertificateReferences.First(),
                             options.TokenEndpoint,
                             options.ClientID,
                             credentialService.GetCredential(),

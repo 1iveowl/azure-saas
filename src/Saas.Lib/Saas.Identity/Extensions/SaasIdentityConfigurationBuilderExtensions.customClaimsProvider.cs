@@ -21,6 +21,16 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
 
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = async context =>
+                    {                        
+                        if (context.Request.Query.TryGetValue("access_token", out var accessToken))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        await Task.CompletedTask;
+                    },
+
                     OnTokenValidated = async context =>
                     {
                         if (context.Principal?.Claims is null)

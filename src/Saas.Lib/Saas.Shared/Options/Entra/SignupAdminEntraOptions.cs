@@ -1,7 +1,7 @@
 ﻿
 namespace Saas.Shared.Options.Entra;
 
-public record EntraSignupAdminOptions : EntraBase
+public record SignupAdminEntraOptions : EntraBase
 {
     public const string SectionName = "SignupAdmin:Entra";
 }

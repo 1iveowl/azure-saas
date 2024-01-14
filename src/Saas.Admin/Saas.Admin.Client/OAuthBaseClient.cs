@@ -6,19 +6,13 @@ using Saas.Shared.Options;
 namespace Saas.SignupAdministration.Web.Services;
 
 // Base client for Nswag generated client that gets an access token using the passed in ITokenAcquisition interface.
-public abstract class OAuthBaseClient
+public abstract class OAuthBaseClient(
+    ITokenAcquisition tokenAcquisition,
+    IOptions<SaasAppScopeOptions> scopes)
 {
-    private readonly ITokenAcquisition _tokenAcquisition;
+    private readonly ITokenAcquisition _tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
 
-    private readonly IEnumerable<string> _scopes;
-
-    public OAuthBaseClient(
-        ITokenAcquisition tokenAcquisition,
-        IOptions<SaasAppScopeOptions> scopes)
-    {
-        _tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
-        _scopes = scopes.Value.Scopes ?? throw new ArgumentNullException($"Scopes must be defined.");
-    }
+    private readonly IEnumerable<string> _scopes = scopes.Value.Scopes; // ?? throw new ArgumentNullException($"Scopes must be defined.");
 
     protected async Task<HttpRequestMessage> CreateHttpRequestMessageAsync(CancellationToken ct)
     {

@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Saas.Shared.Interface;
-using Saas.Shared.Options;
+using Saas.Shared.Options.Entra;
 
 namespace Saas.Identity.Provider;
 public class SaasGraphClientCredentialsProvider<TOptions>(
     SaasApiAuthenticationProvider<ISaasMicrosoftGraphApi, TOptions> authProvider,
     ILogger<SaasGraphClientCredentialsProvider<TOptions>> logger) : IAuthenticationProvider
-    where TOptions : AzureAdB2CBase
+    where TOptions : EntraBase
 {
     private readonly ILogger _logger = logger;
     private readonly SaasApiAuthenticationProvider<ISaasMicrosoftGraphApi, TOptions> _authProvider = authProvider;

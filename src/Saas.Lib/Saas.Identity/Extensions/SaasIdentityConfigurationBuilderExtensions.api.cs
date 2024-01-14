@@ -6,6 +6,7 @@ using Saas.Identity.Interface;
 using Saas.Identity.Provider;
 using Saas.Shared.Interface;
 using Saas.Shared.Options;
+using Saas.Shared.Options.Entra;
 
 namespace Saas.Identity.Extensions;
 public static partial class SaasIdentityConfigurationBuilderExtensions
@@ -14,7 +15,7 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
         this IServiceCollection services, 
         IEnumerable<string>? scopes = default)
             where TProvider : ISaasApi
-            where TOptions : AzureAdB2CBase
+            where TOptions : EntraBase
     {
 
         services.AddMemoryCache();
@@ -46,7 +47,7 @@ public static partial class SaasIdentityConfigurationBuilderExtensions
 
 public class SaasApiClientCredentialBuilder<TProvider, TOptions>(IServiceCollection services)
     where TProvider : ISaasApi
-    where TOptions : AzureAdB2CBase
+    where TOptions : EntraBase
 {
     private readonly IServiceCollection _services = services;
 

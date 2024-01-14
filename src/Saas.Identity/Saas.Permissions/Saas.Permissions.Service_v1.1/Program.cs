@@ -2,7 +2,6 @@ using Saas.Permissions.Service.Data;
 using Saas.Permissions.Service.Interfaces;
 using Saas.Shared.Options;
 using Saas.Permissions.Service.Services;
-using Saas.Permissions.Service.Middleware;
 using System.Reflection;
 using Saas.Identity.Extensions;
 using Saas.Shared.Interface;
@@ -11,6 +10,7 @@ using Saas.Permissions.Service.Data.Context;
 using Saas.Shared.Settings;
 using Saas.Identity.Helper;
 using Saas.Identity.Interface;
+using Saas.Shared.Options.Entra;
 
 /*  IMPORTANT
     In the configuration pattern used here, we're seeking to minimize the use of appsettings.json, 
@@ -66,8 +66,8 @@ else
 builder.Services.Configure<PermissionsApiOptions>(
         builder.Configuration.GetRequiredSection(PermissionsApiOptions.SectionName));
 
-builder.Services.Configure<AzureB2CPermissionsApiOptions>(
-        builder.Configuration.GetRequiredSection(AzureB2CPermissionsApiOptions.SectionName));
+builder.Services.Configure<PermissionsApiEntraOptions>(
+        builder.Configuration.GetRequiredSection(PermissionsApiEntraOptions.SectionName));
 
 builder.Services.Configure<SqlOptions>(
             builder.Configuration.GetRequiredSection(SqlOptions.SectionName));
@@ -88,7 +88,7 @@ builder.Services.AddDbContext<SaasPermissionsContext>(options =>
 });
 
 builder.Services
-    .AddSaasApiCertificateClientCredentials<ISaasMicrosoftGraphApi, AzureB2CPermissionsApiOptions>()
+    .AddSaasApiCertificateClientCredentials<ISaasMicrosoftGraphApi, PermissionsApiEntraOptions>()
     .AddMicrosoftGraphAuthenticationProvider()
     .AddHttpClient<IGraphApiClientFactory, GraphApiClientFactory>()
     .AddTransientHttpErrorPolicy(builder =>
@@ -136,13 +136,13 @@ if (app.Environment.IsDevelopment()) {
 app.UseHttpsRedirection();
 app.UseForwardedHeaders();
 
-if (! app.Environment.IsDevelopment())
-{
-    // When now in development, add middleware to check for the presaz ence of a valid API Key
-    // For debugging purposes, you can comment out 'app.UseMiddleware...'. This way you
-    // don't have to add the secret to the header everytime you want to test something in swagger, for instance.
-    app.UseMiddleware<ApiKeyMiddleware>();
-}
+//if (! app.Environment.IsDevelopment())
+//{
+//    // When now in development, add middleware to check for the presaz ence of a valid API Key
+//    // For debugging purposes, you can comment out 'app.UseMiddleware...'. This way you
+//    // don't have to add the secret to the header everytime you want to test something in swagger, for instance.
+//    app.UseMiddleware<ApiKeyMiddleware>();
+//}
 
 app.MapControllers();
 
